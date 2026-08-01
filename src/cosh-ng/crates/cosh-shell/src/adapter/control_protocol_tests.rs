@@ -960,6 +960,26 @@ fn serialize_one_shot_initialize_disables_session_start() {
 }
 
 #[test]
+fn serialize_cosh_core_initialize_includes_capabilities() {
+    // #2067: the cosh-core driver must advertise both control capabilities so
+    // the core can route trust-mode shell calls through can_use_tool and
+    // accept host-executed shell results.
+    let s = serialize_cosh_core_initialize("init-9");
+    let v: Value = serde_json::from_str(&s).unwrap();
+    assert_eq!(v["type"], "control_request");
+    assert_eq!(v["request_id"], "init-9");
+    assert_eq!(v["request"]["subtype"], "initialize");
+    assert_eq!(
+        v["request"]["capabilities"]["can_handle_can_use_tool"],
+        true
+    );
+    assert_eq!(
+        v["request"]["capabilities"]["can_handle_host_executed_shell"],
+        true
+    );
+}
+
+#[test]
 fn serialize_user_message_format() {
     let s = serialize_user_message("hello world", Some("sess-1"));
     let v: Value = serde_json::from_str(&s).unwrap();
